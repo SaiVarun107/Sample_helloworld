@@ -11,10 +11,13 @@ pipeline {
           usernameVariable: 'SSH_USER'
         )]) {
           bat '''
-          ssh -i "%SSH_KEY%" ^
-              -o StrictHostKeyChecking=no ^
-              -o StrictModes=no ^
-              %SSH_USER%@52.66.142.4 ^
+          REM --- Fix SSH key permissions for Windows OpenSSH ---
+          icacls "%SSH_KEY%" /inheritance:r >nul
+          icacls "%SSH_KEY%" /remove:g "BUILTIN\\Users" >nul
+          icacls "%SSH_KEY%" /grant:r "Everyone:R" >nul
+
+          REM --- Build on EC2 ---
+          ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %SSH_USER%@52.66.142.4 ^
           "cd /home/ubuntu/jenkins_pipeline_1 && \
            git pull && \
            docker build -t myapp:latest ."
@@ -31,10 +34,11 @@ pipeline {
           usernameVariable: 'SSH_USER'
         )]) {
           bat '''
-          ssh -i "%SSH_KEY%" ^
-              -o StrictHostKeyChecking=no ^
-              -o StrictModes=no ^
-              %SSH_USER%@52.66.142.4 ^
+          icacls "%SSH_KEY%" /inheritance:r >nul
+          icacls "%SSH_KEY%" /remove:g "BUILTIN\\Users" >nul
+          icacls "%SSH_KEY%" /grant:r "Everyone:R" >nul
+
+          ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %SSH_USER%@52.66.142.4 ^
           "docker tag myapp:latest glacierknight/myapp:latest && \
            docker push glacierknight/myapp:latest"
           '''
@@ -50,10 +54,11 @@ pipeline {
           usernameVariable: 'SSH_USER'
         )]) {
           bat '''
-          ssh -i "%SSH_KEY%" ^
-              -o StrictHostKeyChecking=no ^
-              -o StrictModes=no ^
-              %SSH_USER%@52.66.142.4 ^
+          icacls "%SSH_KEY%" /inheritance:r >nul
+          icacls "%SSH_KEY%" /remove:g "BUILTIN\\Users" >nul
+          icacls "%SSH_KEY%" /grant:r "Everyone:R" >nul
+
+          ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %SSH_USER%@52.66.142.4 ^
           "kubectl apply -f /home/ubuntu/jenkins_pipeline_1/k8s && \
            kubectl rollout restart deployment myapp"
           '''
