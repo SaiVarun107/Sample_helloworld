@@ -36,7 +36,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             set -e
-            cd /home/ubuntu/jenkins_pipeline_1
+            cd /home/ubuntu
+            if [ ! -d "jenkins_pipeline_1" ]; then
+              git clone https://github.com/SaiVarun107/jenkins_pipeline_1.git
+            fi
+            cd jenkins_pipeline_1
             git pull
             kubectl apply -f k8s
             kubectl rollout restart deployment myapp
