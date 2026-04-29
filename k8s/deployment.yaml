@@ -1,20 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hello-app
+  name: myapp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: hello
+      app: myapp
   template:
     metadata:
       labels:
-        app: hello
+        app: myapp
     spec:
       containers:
-      - name: hello-app
-        image: hello-app:latest
-        imagePullPolicy: IfNotPresent
+      - name: myapp
+        image: glacierknight/myapp:latest
         ports:
-        - containerPort: 8080
+        - containerPort: 3000
