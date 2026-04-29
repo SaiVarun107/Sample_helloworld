@@ -5,9 +5,13 @@ pipeline {
 
     stage('Build Docker Image (on EC2)') {
       steps {
-        sshagent(['ec2-ssh']) {
+        withCredentials([sshUserPrivateKey(
+          credentialsId: 'ec2-ssh',
+          keyFileVariable: 'SSH_KEY',
+          usernameVariable: 'SSH_USER'
+        )]) {
           bat '''
-          ssh -o StrictHostKeyChecking=no ubuntu@52.66.142.4 ^
+          ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %SSH_USER%@52.66.142.4 ^
           "cd /home/ubuntu/jenkins_pipeline_1 && \
            git pull && \
            docker build -t myapp:latest ."
@@ -18,11 +22,14 @@ pipeline {
 
     stage('Push Image to Docker Hub (from EC2)') {
       steps {
-        sshagent(['ec2-ssh']) {
+        withCredentials([sshUserPrivateKey(
+          credentialsId: 'ec2-ssh',
+          keyFileVariable: 'SSH_KEY',
+          usernameVariable: 'SSH_USER'
+        )]) {
           bat '''
-          ssh -o StrictHostKeyChecking=no ubuntu@52.66.142.4 ^
-          "docker login -u glacierknight && \
-           docker tag myapp:latest glacierknight/myapp:latest && \
+          ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %SSH_USER%@52.66.142.4 ^
+          "docker tag myapp:latest glacierknight/myapp:latest && \
            docker push glacierknight/myapp:latest"
           '''
         }
@@ -31,9 +38,13 @@ pipeline {
 
     stage('Deploy to Kubernetes (on EC2)') {
       steps {
-        sshagent(['ec2-ssh']) {
+        withCredentials([sshUserPrivateKey(
+          credentialsId: 'ec2-ssh',
+          keyFileVariable: 'SSH_KEY',
+          usernameVariable: 'SSH_USER'
+        )]) {
           bat '''
-          ssh -o StrictHostKeyChecking=no ubuntu@52.66.142.4 ^
+          ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=no %SSH_USER%@52.66.142.4 ^
           "kubectl apply -f /home/ubuntu/jenkins_pipeline_1/k8s && \
            kubectl rollout restart deployment myapp"
           '''
