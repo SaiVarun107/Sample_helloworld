@@ -1,46 +1,41 @@
 pipeline {
-    agent any
+  agent any
 
-    environment {
-        IMAGE_NAME = "hello-app"
+  environment {
+    KUBECONFIG = credentials('kubeconfig-creds')
+  }
+
+  stages {
+
+    stage('Build Docker Image') {
+      steps {
+        sh 'docker build -t myapp:latest .'
+      }
     }
 
-    stages {
-
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/SaiVarun107/Sample_helloworld.git'
-            }
+    stage('Push Image to Docker Hub') {
+      steps {
+        withCredentials([usernamePassword(
+          credentialsId: 'docker-creds',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          sh '''
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            docker tag myapp:latest $DOCKER_USER/myapp:latest
+            docker push $DOCKER_USER/myapp:latest
+          '''
         }
-
-        stage('Build Application') {
-            steps {
-                sh 'mvn clean package'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t $IMAGE_NAME:latest .'
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh '''
-                  kubectl apply -f k8s/deployment.yaml
-                  kubectl apply -f k8s/service.yaml
-                '''
-            }
-        }
-
-        stage('Verify Deployment') {
-            steps {
-                sh 'kubectl get pods'
-                sh 'kubectl get svc'
-            }
-        }
+      }
     }
+
+    stage('Deploy to Kubernetes') {
+      steps {
+        sh '''
+          kubectl apply -f k8s/
+          kubectl rollout restart deployment myapp
+        '''
+      }
+    }
+  }
 }
-``
