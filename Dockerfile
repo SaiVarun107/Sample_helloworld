@@ -1,4 +1,12 @@
-FROM eclipse-temurin:21-jre
+FROM node:18
+
 WORKDIR /app
-COPY target/*.jar app.jar
-ENTRYPOINT ["java","-jar","app.jar"]
+
+COPY package.json .
+RUN npm install
+
+COPY app.js .
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
