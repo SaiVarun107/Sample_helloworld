@@ -1,4 +1,4 @@
-name: CI/CD - Build, Push, Deploy to EC2 Kubernetes
+name: CI/CD Pipeline
 
 on:
   push:
