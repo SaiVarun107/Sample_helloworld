@@ -1,5 +1,5 @@
 {
-  "name": "jenkins_pipeline_1",
+  "name": "HelloWorld_1",
   "version": "1.0.0",
   "scripts": {
     "start": "node app.js"
